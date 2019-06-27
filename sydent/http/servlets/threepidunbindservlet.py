@@ -58,6 +58,8 @@ class ThreePidUnbindServlet(Resource):
             threepid = body['threepid']
             mxid = body['mxid']
 
+            logger.info("Got unbind request for 3PID %s (MXID: %s)" % (threepid, mxid))
+
             if 'medium' not in threepid or 'address' not in threepid:
                 request.setResponseCode(400)
                 request.write(json.dumps({'errcode': 'M_MISSING_PARAMS', 'error': 'Threepid lacks medium / address'}))

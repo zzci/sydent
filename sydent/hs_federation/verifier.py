@@ -103,6 +103,8 @@ class Verifier(object):
                     continue
 
             server_keys = yield self._getKeysForServer(server_name)
+            logger.info("Got keys from server %s: %s" % (server_name, server_keys))
+
             for key_name, sig in sigs.items():
                 if key_name in server_keys:
                     if 'key' not in server_keys[key_name]:
@@ -145,11 +147,16 @@ class Verifier(object):
         if content is not None:
             json_request["content"] = content
 
+        logger.info("Authenticating the unbind request with JSON: %s" % json_request)
+
         origin = None
 
-        def parse_auth_header(header_str):
+        def parse_auth_header(header_bytes):
+            logger.info("Processing auth header: %s" % header_bytes)
+            logger.info("Extracted auth header's type is: %s" % type(header_bytes))
             try:
-                params = auth.split(" ")[1].split(",")
+                header_str = header_bytes.decode('utf-8')
+                params = header_str.split(" ")[1].split(",")
                 param_dict = dict(kv.split("=") for kv in params)
 
                 def strip_quotes(value):
@@ -161,6 +168,11 @@ class Verifier(object):
                 origin = strip_quotes(param_dict["origin"])
                 key = strip_quotes(param_dict["key"])
                 sig = strip_quotes(param_dict["sig"])
+
+                logger.info("Extracted origin from auth headers: %s (type %s)" % (origin, type(origin)))
+                logger.info("Extracted key from auth headers: %s (type %s)" % (key, type(key)))
+                logger.info("Extracted sig from auth headers: %s (type %s)" % (sig, type(sig)))
+
                 return (origin, key, sig)
             except Exception:
                 raise SignatureVerifyException("Malformed Authorization header")
@@ -178,6 +190,8 @@ class Verifier(object):
 
         if not json_request["signatures"]:
             raise NoAuthenticationError("Missing X-Matrix Authorization header")
+
+        logger.info("Updated JSON: %s" % json_request)
 
         yield self.verifyServerSignedJson(json_request, [origin])
 
