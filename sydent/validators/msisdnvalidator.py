@@ -21,7 +21,6 @@ import phonenumbers
 
 from sydent.db.valsession import ThreePidValSessionStore
 from sydent.validators import common
-from sydent.sms.openmarket import OpenMarketSMS
 
 from sydent.validators import DestinationRejectedException
 
