@@ -44,7 +44,7 @@ setup(
 
         # twisted warns about about the absence of this
         "service_identity>=1.0.0",
-        "twilio"
+        "twilio",
         "phonenumbers",
         "pyopenssl",
         "attrs>=19.1.0",
