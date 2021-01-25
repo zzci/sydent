@@ -25,7 +25,7 @@ from sydent.validators import common
 from sydent.validators import DestinationRejectedException
 
 from sydent.util import time_msec
-from twilio.rest import SMS
+from twilio.rest import Client as SMS
 
 logger = logging.getLogger(__name__)
 
