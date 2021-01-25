@@ -26,6 +26,7 @@ from sydent.sms.openmarket import OpenMarketSMS
 from sydent.validators import DestinationRejectedException
 
 from sydent.util import time_msec
+from twilio.rest import SMS
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,10 @@ logger = logging.getLogger(__name__)
 class MsisdnValidator:
     def __init__(self, sydent):
         self.sydent = sydent
-        self.omSms = OpenMarketSMS(sydent)
+        account_sid = self.sydent.cfg.get('sms', 'account_sid')
+        auth_token  = self.sydent.cfg.get('sms', 'auth_token')
+
+        self.omSms = SMS(account_sid, auth_token)
 
         # cache originators & sms rules from config file
         self.originators = {}
@@ -111,9 +115,14 @@ class MsisdnValidator:
         )
 
         smsBody = smsBodyTemplate.format(token=valSession.token)
+        sender  = self.sydent.cfg.get('sms', 'sender')
 
-        self.omSms.sendTextSMS(smsBody, msisdn, originator)
-
+        self.omSms.sendTextSMS(smsBody, msisdn)
+        message = self.omSms.messages.create(to=msisdn, from_=sender,body=smsBody)
+        logger.info(
+            "send sms from %s to %s receive sid %s",
+            sender, msisdn, message.sid
+        )
         valSessionStore.setSendAttemptNumber(valSession.id, sendAttempt)
 
         return valSession.id
